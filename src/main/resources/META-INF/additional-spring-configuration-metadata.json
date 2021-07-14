@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "mailcheck",
+      "type": "com.basecreator.domain.common.MailCheck",
+      "description": "Description for mailcheck."
+    },
+    {
+      "name": "auth.app.jwtExpirationMs",
+      "type": "java.lang.String",
+      "description": "Description for auth.app.jwtExpirationMs."
+    }
+  ] }
