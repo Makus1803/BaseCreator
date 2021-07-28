@@ -3,9 +3,6 @@ package com.basecreator.domain.model.team;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
 @Repository
-public interface MailOptionsRepository extends JpaRepository<MailOptions, Long> {
+public interface MailPatternRepository extends JpaRepository<MailPattern, Long> {
 }

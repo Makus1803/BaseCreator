@@ -1,12 +1,12 @@
 package com.basecreator.web.api;
 
-import com.basecreator.domain.model.team.MailOptions;
+import com.basecreator.domain.model.team.MailPattern;
 import com.basecreator.domain.service.MailService;
+import com.basecreator.web.payload.response.OneMailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -16,11 +16,29 @@ public class MailController {
     MailService mailService;
 
     @PostMapping("/add/option")
-    public MailOptions addMail(MailOptions mailOptions){
+    public MailPattern addMail(MailPattern mailPattern) {
 
-        return mailService.save(mailOptions);
+        return mailService.save(mailPattern);
     }
 
+    @GetMapping("/get/all-pattern")
+    public List<MailPattern> getAllMailPattern() {
+        return mailService.getAllMailPattern();
+    }
 
+    @PostMapping("/get/encoded-pattern")
+    public List<String> getAllEncodedPattern(String name, String surname, String domain) {
+        return mailService.getEncodedMailAddress(name, surname, domain);
+    }
+
+    @PostMapping("/check/one-mail")
+    public OneMailResponse checkOneMail(String mailAddress) {
+        return mailService.checkOne(mailAddress);
+    }
+
+    @PostMapping("/check/all-mails")
+    public List<OneMailResponse> checkAllMails(String name, String surname, String domain) {
+        return mailService.checkAll(name, surname, domain);
+    }
 
 }

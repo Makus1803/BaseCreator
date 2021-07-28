@@ -1,9 +1,11 @@
 package com.basecreator.utils;
 
+import com.basecreator.domain.model.verimail.Verimail;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.web.client.RestTemplate;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -22,11 +24,11 @@ public class CheckMailUtils {
     // mamipi7349@nnacell.com
     // test12
     @Value("${mailcheck.verimailApi}")
-    private static String APIKey;
+    private static String APIKey = "E9F0611F9C554142A93E8F54822CB81A";
     private static final Logger logger = LogManager.getLogger(CheckMailUtils.class);
 
     private static int hear(BufferedReader in) throws IOException {
-        String line = null;
+        String line;
         int res = 0;
 
         while ((line = in.readLine()) != null) {
@@ -77,7 +79,7 @@ public class CheckMailUtils {
         while (en.hasMore()) {
             String mailhost;
             String x = (String) en.next();
-            String f[] = x.split(" ");
+            String[] f = x.split(" ");
             //  THE fix *************
             if (f.length == 1)
                 mailhost = f[0];
@@ -97,11 +99,11 @@ public class CheckMailUtils {
         int pos = address.indexOf('@');
 
         // If the address does not contain an '@', it's not valid
-        if (pos == -1) return "Regex is not valid";
+        if (pos == -1) return "Regex address is not valid";
 
         // Isolate the domain/machine name and get a list of mail exchangers
         String domain = address.substring(++pos);
-        ArrayList mxList = null;
+        ArrayList<String> mxList;
         try {
             mxList = getMX(domain);
         } catch (NamingException ex) {
@@ -117,12 +119,12 @@ public class CheckMailUtils {
         // a message [store and forwarder for example] and another [like
         // the actual mail server] to reject it. This is why we REALLY ought
         // to take the preference into account.
-        for (int mx = 0; mx < mxList.size(); mx++) {
+        for (Object o : mxList) {
             boolean valid = false;
             try {
                 int res;
                 //
-                Socket skt = new Socket((String) mxList.get(mx), 25);
+                Socket skt = new Socket((String) o, 25);
                 BufferedReader rdr = new BufferedReader
                         (new InputStreamReader(skt.getInputStream()));
                 BufferedWriter wtr = new BufferedWriter
@@ -156,20 +158,31 @@ public class CheckMailUtils {
                 if (res != 250)
                     return "Undeliverable. Address not valid";
 
-                valid = true;
                 rdr.close();
                 wtr.close();
                 skt.close();
+
+                return "Deliverable";
             } catch (Exception ex) {
                 // Do nothing but try next host
 //                ex.printStackTrace();
-            } finally {
-                if (valid) return "Deliverable";
             }
         }
         return "Undeliverable";
     }
 
+    public static String checkFromApi(String address){
+        logger.info(new Date().toString() + "     " + "Pobieranie danych z API dla: " + address);
+        RestTemplate restTemplate = new RestTemplate();
 
+        Verimail response = restTemplate.getForObject("https://api.verimail.io/v3/verify?email=" + address + "&key="+APIKey, Verimail.class);
+        assert response != null;
+        if (response.getResult().equals("catch_all"))
+            return "Catch_all";
+        else if (response.getResult().equals("deliverable"))
+            return "Deliverable";
+        else
+            return "Undeliverable";
+    }
 
 }
