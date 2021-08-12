@@ -1,6 +1,6 @@
 package com.basecreator.web.api;
 
-import com.basecreator.domain.model.team.MailPattern;
+import com.basecreator.domain.model.mail.MailPattern;
 import com.basecreator.domain.service.MailService;
 import com.basecreator.web.payload.response.OneMailResponse;
 import org.springframework.beans.factory.annotation.Autowired;

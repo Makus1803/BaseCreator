@@ -1,16 +1,16 @@
 package com.basecreator.domain.service;
 
-import com.basecreator.domain.model.team.MailPattern;
-import com.basecreator.domain.model.team.MailPatternRepository;
+import com.basecreator.domain.model.client.Client;
+import com.basecreator.domain.model.client.ClientRepository;
+import com.basecreator.domain.model.mail.*;
 import com.basecreator.utils.CheckMailUtils;
+import com.basecreator.utils.MailUtils;
 import com.basecreator.web.payload.response.OneMailResponse;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -18,6 +18,44 @@ import java.util.stream.Collectors;
 public class MailService {
     @Autowired
     private MailPatternRepository mailPatternRepository;
+    @Autowired
+    private MessagePatternRepository messagePatternRepository;
+    @Autowired
+    private ClientRepository clientRepository;
+
+    public MessagePattern save(MessagePattern messagePattern) {
+        return messagePatternRepository.save(messagePattern);
+    }
+
+    public List<MessagePattern> getAllMessagePatterns() {
+        return messagePatternRepository.findAll();
+    }
+
+    public MessagePattern addMapToPattern(String messagePatternName, String key, String value) {
+        MessagePattern messagePattern = messagePatternRepository.findByName(messagePatternName);
+        Map<EMessageKeys, String> map = messagePattern.getMessageValueMap();
+        MailUtils.addToMap(map, key, value);
+
+        messagePattern.setMessageValueMap(map);
+        return messagePatternRepository.save(messagePattern);
+    }
+
+    public String decodeMessagePattern(String patternName, String clientNip){
+        MessagePattern messagePattern = messagePatternRepository.findByName(patternName);
+        String message = messagePattern.getPattern();
+        Map<EMessageKeys, String> patternMap = messagePattern.getMessageValueMap();
+
+        Client client = clientRepository.findByNip(clientNip);
+
+        return message.replace(patternMap.get(EMessageKeys.MESSAGE_KEYS_firstName), client.getFirstName());
+    }
+
+    public Map<EMessageKeys, String> getMessageValueMap(String messagePatternName) {
+        return messagePatternRepository.findByName(messagePatternName).getMessageValueMap();
+
+    }
+
+    /* --- Mail pattern --- */
 
     public MailPattern save(MailPattern mailPattern) {
         return mailPatternRepository.save(mailPattern);
@@ -27,7 +65,7 @@ public class MailService {
         return mailPatternRepository.findAll();
     }
 
-    public List<String> getEncodedMailAddress(String name, String surname, String domain){
+    public List<String> getEncodedMailAddress(String name, String surname, String domain) {
         List<MailPattern> mailPatterns = mailPatternRepository.findAll();
 
         mailPatterns.parallelStream().forEach(pattern -> {
@@ -41,10 +79,10 @@ public class MailService {
         return mailPatterns.stream().map(MailPattern::getPattern).collect(Collectors.toList());
     }
 
-    public OneMailResponse checkOne(String mail){
+    public OneMailResponse checkOne(String mail) {
         String result = CheckMailUtils.isAddressValid(mail);
         if (result.equals("Deliverable") &&
-                CheckMailUtils.isAddressValid(RandomString.make(10)+"."+RandomString.make(10)+"@"+mail.substring(mail.indexOf("@") + 1)).equals("Deliverable"))
+                CheckMailUtils.isAddressValid(RandomString.make(10) + "." + RandomString.make(10) + "@" + mail.substring(mail.indexOf("@") + 1)).equals("Deliverable"))
             return new OneMailResponse(mail, "Catch-all");
         else if (!(result.equals("Deliverable") || result.equals("Regex address is not valid")))
             return new OneMailResponse("test", CheckMailUtils.checkFromApi(mail));
@@ -52,7 +90,7 @@ public class MailService {
             return new OneMailResponse(mail, result);
     }
 
-    public List<OneMailResponse> checkAll(String name, String surname, String domain){
+    public List<OneMailResponse> checkAll(String name, String surname, String domain) {
         List<String> addresses = getEncodedMailAddress(name, surname, domain);
         List<OneMailResponse> result = new ArrayList<>();
         AtomicInteger valid = new AtomicInteger(0);
@@ -71,7 +109,7 @@ public class MailService {
         if (valid.get() == addresses.size())
             return Collections.singletonList(new OneMailResponse("ALL", "Catch-all"));
 
-        if (notValid.get() == addresses.size()){
+        if (notValid.get() == addresses.size()) {
             result.clear();
 
             if (CheckMailUtils.checkFromApi(addresses.get(0)).equals("catch-all"))

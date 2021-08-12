@@ -1,4 +1,4 @@
-package com.basecreator.domain.model.team;
+package com.basecreator.domain.model.mail;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
