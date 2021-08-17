@@ -26,9 +26,9 @@ public class MailController {
         return mailService.getAllMailPattern();
     }
 
-    @PostMapping("/get/encoded-pattern")
-    public List<String> getAllEncodedPattern(String name, String surname, String domain) {
-        return mailService.getEncodedMailAddress(name, surname, domain);
+    @PostMapping("/get/decoded-pattern")
+    public List<String> getAllDecodedPattern(String name, String surname, String domain) {
+        return mailService.getDecodedMailAddress(name, surname, domain);
     }
 
     @PostMapping("/check/one-mail")

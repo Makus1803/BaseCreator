@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+src/main/resources/baza-adsy.csv
+src/main/resources/baza-adsy.xlsx

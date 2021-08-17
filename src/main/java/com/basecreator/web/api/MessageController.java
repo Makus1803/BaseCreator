@@ -43,4 +43,9 @@ public class MessageController {
     public String decodePattern(String patternName, String clientNip){
         return mailService.decodeMessagePattern(patternName, clientNip);
     }
+
+    @PostMapping("/pattern/decode-all")
+    public List<String> decodeAllPattern(String patternName){
+        return mailService.decodeAllMessagePattern(patternName);
+    }
 }

@@ -45,9 +45,27 @@ public class MailService {
         String message = messagePattern.getPattern();
         Map<EMessageKeys, String> patternMap = messagePattern.getMessageValueMap();
 
-        Client client = clientRepository.findByNip(clientNip);
+        Client client = clientRepository.findByCustomField1(clientNip);
 
         return message.replace(patternMap.get(EMessageKeys.MESSAGE_KEYS_firstName), client.getFirstName());
+    }
+
+
+    public List<String> decodeAllMessagePattern(String patternName) {
+        MessagePattern messagePattern = messagePatternRepository.findByName(patternName);
+        String message = messagePattern.getPattern();
+        Map<EMessageKeys, String> patternMap = messagePattern.getMessageValueMap();
+
+        List<Client> clients = clientRepository.findAll();
+
+        List<String> messages = new ArrayList<>();
+
+        clients.forEach(client -> {
+            messages.add(MailUtils.decodeMessage(patternMap, client, message));
+        });
+
+        return messages;
+
     }
 
     public Map<EMessageKeys, String> getMessageValueMap(String messagePatternName) {
@@ -65,7 +83,7 @@ public class MailService {
         return mailPatternRepository.findAll();
     }
 
-    public List<String> getEncodedMailAddress(String name, String surname, String domain) {
+    public List<String> getDecodedMailAddress(String name, String surname, String domain) {
         List<MailPattern> mailPatterns = mailPatternRepository.findAll();
 
         mailPatterns.parallelStream().forEach(pattern -> {
@@ -91,7 +109,7 @@ public class MailService {
     }
 
     public List<OneMailResponse> checkAll(String name, String surname, String domain) {
-        List<String> addresses = getEncodedMailAddress(name, surname, domain);
+        List<String> addresses = getDecodedMailAddress(name, surname, domain);
         List<OneMailResponse> result = new ArrayList<>();
         AtomicInteger valid = new AtomicInteger(0);
         AtomicInteger notValid = new AtomicInteger(0);
