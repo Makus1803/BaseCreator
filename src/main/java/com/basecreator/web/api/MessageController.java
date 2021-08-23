@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,12 @@ public class MessageController {
 
     @PostMapping("/pattern/decode-all")
     public List<String> decodeAllPattern(String patternName){
-        return mailService.decodeAllMessagePattern(patternName);
+
+        long startTime = System.nanoTime();
+        List<String> result = mailService.decodeAllMessagePattern(patternName);
+        long endTime = System.nanoTime();
+        System.out.println("Time: " + (endTime-startTime));
+        System.out.println("Size: " + result.size());
+        return result;
     }
 }

@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Map;
 public class MailUtils {
     public static String decodeMessage(Map<EMessageKeys, String> messageKey, Client client, String message){
-        if (!StringUtils.isEmpty(client.getFirstName()))
+        if (!StringUtils.isEmpty(client.getFirstName()) && !StringUtils.isEmpty(messageKey.get(EMessageKeys.MESSAGE_KEYS_firstName)))
             message = message.replace(messageKey.get(EMessageKeys.MESSAGE_KEYS_firstName), client.getFirstName());
 
         if (!StringUtils.isEmpty(client.getLastName()) && !StringUtils.isEmpty(messageKey.get(EMessageKeys.MESSAGE_KEYS_lastName)))
